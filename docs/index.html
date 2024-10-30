@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Despesas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto auto auto auto auto auto 150px;
+            grid-gap: 10px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .container > div {
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 8px;
+            justify-content: center;
+            text-align: center;
+        }
+        .menu {
+            grid-row: span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start !important;
+            align-items: stretch;
+            gap: 5px;
+            height: 633px;
+        }
+
+        #open-modal-btn, #open-modal-btn-conta, #open-modal-btn-cartao {
+            height: 65px;
+            font-size: 16px;   
+            font-weight: 700;
+        }
+
+        .bloco-de-despesas {
+            grid-column: 2 / 9;
+            display: grid;
+            gap: 10px;
+            font-weight: 700;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        #total-revenue {
+            order: 4;
+        }
+        #total-expenses {
+            order: 5;
+        }
+
+        #total-balance {
+            background: linear-gradient(90deg, rgba(223,159,8,1) 0%, rgba(190,144,14,1) 0%, rgba(255,0,0,1) 100%);
+            order: 3;
+        }
+
+        body > div.container > div.bloco-de-despesas > div:nth-child(4) {
+            order: 1;
+        }
+        body > div.container > div.bloco-de-despesas > div:nth-child(5) {
+            order: 2;
+        }
+
+        .bancos-bloco {
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            min-height: 240px;
+            max-height: 240px;
+            margin-bottom: 10px;
+        }
+
+        .menu button {
+            background-color: #1e1e1e;
+            border: none;
+            color: white;
+            padding: 10px;
+            width: 70%;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: .2s ease-in-out 0s;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+        }
+        
+        .menu button i {
+            margin-right: 12px;
+            font-size: 14px;
+        }
+        
+        .menu button:hover {
+            background-color: #555;
+            transform: scale(1.1);
+        }
+
+        .minhas-contas {
+            border-radius: 8px;
+            min-height: 115px;
+            max-height: 115px;
+            margin-bottom: 10px;
+            overflow: auto;
+            background-color: #1e1e1e;
+            text-align: left;
+        }
+
+        .minhas-contas > span {
+            font-size: 10px;
+        }    
+
+        .minhas-contas > i {
+            font-size: 11px;
+            margin-right: 5px;
+            margin-left: 10px;
+            padding-top: 10px;;
+        }
+
+        .minhas-contas > div {
+            margin-top: 10px;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        .meus-cartões {
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            min-height: 115px;
+            max-height: 115px;
+            overflow: auto;
+            background-color: #1e1e1e;
+            text-align: left;
+        }
+
+        .meus-cartões > span {
+            font-size: 10px;
+        }
+
+        .meus-cartões > i {
+            font-size: 11px;
+            margin-right: 5px;
+            margin-left: 10px;
+            padding-top: 10px;
+        }
+
+        .meus-cartões > div {
+            margin-top: 10px;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        .large {
+            grid-column: span 1;
+            height: 180px;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 150px;
+        }
+        .receitas-bloco, .despesas-bloco {
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+
+        .grafico-bloco {
+            grid-column: 2 / 9;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            height: 450px;
+        }
+        .grafico-item {
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 8px;
+            text-align: center;
+            height: 100%;
+            padding: 10px;
+        }
+        .lancamentos {
+            grid-column: 1 / 9;
+            display: inline-flex;
+            gap: 10px;
+            height: 400px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover, .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        h1 {
+            color: #555;
+            text-align: center;
+        }
+
+        #transaction-form, #account-form, #card-form {
+            display: flex;
+            flex-direction: column;
+            color: #555;
+            font-size: 11px;
+            gap: 3px;
+        }
+
+        #transaction-form > button, #account-form > button, #card-form > button {
+            margin-top: 10px;
+            padding: 5px;
+            padding-inline: 10px;
+            background: #28a745;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #transaction-form > button:hover, #account-form > button:hover, #card-form > button:hover {
+            color: #fff;
+            background: #28a777;
+        }
+
+        #type, #description, #category, #amount, #date, #account-name, #account-balance, #card-name, #card-limit {
+            padding: 6px;
+            margin-bottom: 10px;
+            color: #444;  
+        }
+
+        .grafico-item span {
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Tabela CSS */
+        .tabela {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+        }
+
+        .tabela th, .tabela td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .tabela th {
+            background-color: #444;
+        }
+
+        .logo-list {
+            display: none;
+            position: absolute;
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            width: 90%;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .logo-list img {
+            width: 60px;
+            height: auto;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+        .logo-list img:hover {
+            transform: scale(1.1);
+            border: 2px solid #28a745;
+        }
+        .logo-container {
+            position: relative;
+        }
+        .selected-logo {
+            width: 60px;
+            height: auto;
+            border: 1px solid #555;
+            border-radius: 4px;
+            display: block;
+            margin-top: 10px;
+        }
+
+
+        #bank-logo-card {
+            padding: 6px;
+            color: #444;
+        }
+            
+        #bank-logo-account {
+            padding: 6px;
+            color: #444;
+        }
+
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="menu">
+            <div class="bancos-bloco">
+                <div class="minhas-contas"><i class="fas fa-credit-card"></i><span>Minhas Contas</span></div>
+                <div class="meus-cartões"><i class="fas fa-id-card"></i><span>Meus Cartões</span></div>
+            </div>
+            <button id="open-modal-btn"><i class="fas fa-plus"></i> Gerar Lançamento</button>
+            <button id="open-modal-btn-conta"><i class="fas fa-id-card"></i> Incluir Conta</button>
+            <button id="open-modal-btn-cartao"><i class="fas fa-credit-card"></i> Incluir Cartão</button>
+            <button><i class="fas fa-university"></i> Filtrar por Bancos</button>
+            <button><i class="fas fa-hand-holding-usd"></i> Filtrar por Despesas</button>
+            <button><i class="fa-solid fa-list-ul"></i> Filtrar por Categorias</button>
+            <button><i class="fas fa-calendar-alt"></i> Filtrar por Período</button>
+        </div>
+        <div class="bloco-de-despesas">
+            <div class="large" id="total-revenue">RECEITAS: R$ 0.00</div>
+            <div class="large" id="total-expenses">DESPESAS: R$ 0.00</div>
+            <div class="large" id="total-balance">SALDO: R$ 0.00</div>
+            <div class="large" id="total-account-balance">SALDO CONTAS: R$ 0.00</div>
+            <div class="large" id="total-card-limit">LIMITE CARTÕES: R$ 0.00</div>
+        </div>
+        <div class="grafico-bloco">
+            <div class="grafico-item"><span>Top 5 entradas por categorias</span> <canvas id="entradasGraph"></canvas></div>
+            <div class="grafico-item"><span>5 principais Despesas</span> <canvas id="despesasGraph"></canvas></div>
+            <div class="grafico-item"><span>Despesas Mensais Entrada x Saída</span> <canvas id="entradaSaidaGraph"></canvas></div>
+            <div class="grafico-item"><span>Despesas por Categorias</span> <canvas id="categoriasGraph"></canvas></div>
+        </div>
+        <div class="lancamentos">
+            <div class="receitas-bloco">
+                <h3>RECEITAS</h3>
+                <table class="tabela" id="receitas-table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="despesas-bloco">
+                <h3>DESPESAS</h3>
+                <table class="tabela" id="despesas-table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('myModal')">×</span>
+            <h1>Gerar Lançamento</h1>
+            <div class="form-container">
+                <form id="transaction-form">
+                    <label for="type">Tipo:</label>
+                    <select id="type" required>
+                        <option value="revenue">Receita</option>
+                        <option value="expense">Despesa</option>
+                    </select>
+                    <label for="description">Descrição:</label>
+                    <input type="text" id="description" required placeholder="Descrição">
+                    <label for="category">Categoria:</label>
+                    <select id="category" required>
+                        <option value="">Selecione uma Categoria</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Educação">Educação</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                    <label for="amount">Valor:</label>
+                    <input type="number" id="amount" required placeholder="Valor" step="0.01">
+                    <label for="date">Data:</label>
+                    <input type="date" id="date" required>
+                    <button type="submit">Adicionar Lançamento</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModalConta" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('myModalConta')">×</span>
+            <h1>Incluir Conta</h1>
+            <div class="form-container">
+                // Substitua o form existente em myModalConta por este
+                <form id="account-form" onsubmit="addAccount(event)">
+                    <label for="account-name">Nome da Conta:</label>
+                    <input type="text" id="account-name" required placeholder="Nome da Conta">
+                    <label for="account-balance">Saldo Inicial:</label>
+                    <input type="number" id="account-balance" required placeholder="Saldo" step="0.01">
+                    <label for="bank-logo-account">Logotipo do Banco:</label>
+                    <select id="bank-logo-account" required>
+                        <option value="">Selecione um logotipo</option>
+                        <option value="url_do_logo_banco1.png">Banco 1</option>
+                        <option value="url_do_logo_banco2.png">Banco 2</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco1.png">Banco 1</option>
+                        <option value="url_do_logo_banco2.png">Banco 2</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <!-- Adicione mais bancos conforme necessário -->
+                    </select>
+                    <button type="submit">Adicionar Conta</button>
+                </form>
+                
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModalCartao" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('myModalCartao')">×</span>
+            <h1>Incluir Cartão</h1>
+            <div class="form-container">
+                // Substitua o form existente em myModalCartao por este
+                <form id="card-form" onsubmit="addCard(event)">
+                    <label for="card-name">Nome do Cartão:</label>
+                    <input type="text" id="card-name" required placeholder="Nome do Cartão">
+                    <label for="card-limit">Limite do Cartão:</label>
+                    <input type="number" id="card-limit" required placeholder="Limite" step="0.01">
+                    <label for="bank-logo-card">Logotipo do Banco:</label>
+                    <select id="bank-logo-card" required>
+                        <option value="">Selecione um logotipo</option>
+                        <option value="url_do_logo_banco1.png">Banco 1</option>
+                        <option value="url_do_logo_banco2.png">Banco 2</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco1.png">Banco 1</option>
+                        <option value="url_do_logo_banco2.png">Banco 2</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <option value="url_do_logo_banco3.png">Banco 3</option>
+                        <!-- Adicione mais bancos conforme necessário -->
+                    </select>
+                    <button type="submit">Adicionar Cartão</button>
+                </form>
+                
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let totalRevenue = 0;
+        let totalExpenses = 0;
+        let totalBalance = 0;
+        const totalRevenueElement = document.getElementById('total-revenue');
+        const totalExpensesElement = document.getElementById('total-expenses');
+        const totalBalanceElement = document.getElementById('total-balance');
+        const receitasTableBody = document.querySelector('#receitas-table tbody');
+        const despesasTableBody = document.querySelector('#despesas-table tbody');
+
+        document.getElementById('open-modal-btn').onclick = function() {
+            openModal('myModal');
+        }
+
+        document.getElementById('open-modal-btn-conta').onclick = function() {
+            openModal('myModalConta');
+        }
+
+        document.getElementById('open-modal-btn-cartao').onclick = function() {
+            openModal('myModalCartao');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        document.querySelector('.close').onclick = function() {
+            closeModal('myModal');
+        }
+
+        document.getElementById('transaction-form').onsubmit = function(event) {
+            event.preventDefault();
+
+            const type = document.getElementById('type').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const date = document.getElementById('date').value;
+
+            const transaction = { type, description, category, amount, date };
+
+            saveTransaction(transaction);
+
+            closeModal('myModal');
+            document.getElementById('transaction-form').reset();
+        }
+
+        function saveTransaction(transaction) {
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            transactions.push(transaction);
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)); // Ordena por data
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            updateTables(transactions); // Atualiza as tabelas
+        }
+
+        function loadTransactions() {
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)); // Ordena por data
+            updateTables(transactions); // Atualiza as tabelas
+        }
+
+        function updateTables(transactions) {
+            receitasTableBody.innerHTML = '';
+            despesasTableBody.innerHTML = '';
+            totalRevenue = 0;
+            totalExpenses = 0;
+
+            transactions.forEach(transaction => {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `<td>${transaction.description}</td><td>${transaction.category}</td><td>R$ ${transaction.amount.toFixed(2)}</td><td>${transaction.date}</td>`;
+
+                if (transaction.type === 'expense') {
+                    totalExpenses += transaction.amount;
+                    totalExpensesElement.textContent = `DESPESAS: R$ ${totalExpenses.toFixed(2)}`;
+                    despesasTableBody.appendChild(newRow);
+                } else {
+                    totalRevenue += transaction.amount;
+                    totalRevenueElement.textContent = `RECEITAS: R$ ${totalRevenue.toFixed(2)}`;
+                    receitasTableBody.appendChild(newRow);
+                }
+            });
+
+            totalBalance = totalRevenue - totalExpenses;
+            totalBalanceElement.textContent = `TOTAL: R$ ${totalBalance.toFixed(2)}`;
+        }
+
+        window.onload = loadTransactions;
+
+        function addAccount(event) {
+    event.preventDefault();
+
+    const accountName = document.getElementById('account-name').value;
+    const accountBalance = parseFloat(document.getElementById('account-balance').value);
+    const bankLogo = document.getElementById('bank-logo-account').value;
+
+    const accountItem = document.createElement('div');
+    accountItem.innerHTML = `<img src="${bankLogo}" style="width: 30px; height: 30px;"> ${accountName} - R$ ${accountBalance.toFixed(2)}`;
+    document.querySelector('.minhas-contas').appendChild(accountItem);
+
+    closeModal('myModalConta');
+    document.getElementById('account-form').reset();
+}
+
+function addCard(event) {
+    event.preventDefault();
+
+    const cardName = document.getElementById('card-name').value;
+    const cardLimit = parseFloat(document.getElementById('card-limit').value);
+    const bankLogo = document.getElementById('bank-logo-card').value;
+
+    const cardItem = document.createElement('div');
+    cardItem.innerHTML = `<img src="${bankLogo}" style="width: 30px; height: 30px;"> ${cardName} - Limite: R$ ${cardLimit.toFixed(2)}`;
+    document.querySelector('.meus-cartões').appendChild(cardItem);
+
+    closeModal('myModalCartao');
+    document.getElementById('card-form').reset();
+}
+
+function addAccount(event) {
+    event.preventDefault();
+
+    const accountName = document.getElementById('account-name').value;
+    const accountBalance = parseFloat(document.getElementById('account-balance').value);
+    const bankLogoAccount = document.getElementById('bank-logo-account').value;
+
+    const account = { name: accountName, balance: accountBalance, logo: bankLogoAccount };
+
+    let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+    accounts.push(account);
+    localStorage.setItem('accounts', JSON.stringify(accounts));
+
+    updateAccounts();
+    closeModal('myModalConta');
+    document.getElementById('account-form').reset();
+}
+
+function addCard(event) {
+    event.preventDefault();
+
+    const cardName = document.getElementById('card-name').value;
+    const cardLimit = parseFloat(document.getElementById('card-limit').value);
+    const bankLogoCard = document.getElementById('bank-logo-card').value;
+
+    const card = { name: cardName, limit: cardLimit, logo: bankLogoCard };
+
+    let cards = JSON.parse(localStorage.getItem('cards')) || [];
+    cards.push(card);
+    localStorage.setItem('cards', JSON.stringify(cards));
+
+    updateCards();
+    closeModal('myModalCartao');
+    document.getElementById('card-form').reset();
+}
+
+function updateAccounts() {
+    const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+    const accountsContainer = document.querySelector('.minhas-contas');
+    accountsContainer.innerHTML = '<i class="fas fa-credit-card"></i><span>Minhas Contas</span>';
+
+    accounts.forEach(account => {
+        const accountElement = document.createElement('div');
+        accountElement.innerHTML = `<img src="${account.logo}" style="width:30px; margin-right:10px;vertical-align: middle;">${account.name} - Saldo: R$ ${account.balance.toFixed(2)}`;
+        accountsContainer.appendChild(accountElement);
+    });
+}
+
+function updateCards() {
+    const cards = JSON.parse(localStorage.getItem('cards')) || [];
+    const cardsContainer = document.querySelector('.meus-cartões');
+    cardsContainer.innerHTML = '<i class="fas fa-id-card"></i><span>Meus Cartões</span>';
+
+    cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.innerHTML = `<img src="${card.logo}" style="width:30px; margin-right:10px;vertical-align: middle;">${card.name} - Limite: R$ ${card.limit.toFixed(2)}`;
+        cardsContainer.appendChild(cardElement);
+    });
+}
+
+// Carregar contas e cartões ao iniciar a página
+window.onload = function() {
+    loadTransactions();
+    updateAccounts();
+    updateCards();
+};
+
+// aqui - - - - - Função de atualização das contas e cálculo do total de saldo das contas
+function updateAccounts() {
+    const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+    const accountsContainer = document.querySelector('.minhas-contas');
+    accountsContainer.innerHTML = '<i class="fas fa-credit-card"></i><span>Minhas Contas</span>';
+    
+    let totalAccountBalance = 0; // Total de saldo das contas
+
+    accounts.forEach(account => {
+        const accountElement = document.createElement('div');
+        accountElement.innerHTML = `<img src="${account.logo}" style="width:30px; margin-right:10px;vertical-align: middle;">${account.name} - Saldo: R$ ${account.balance.toFixed(2)}`;
+        accountsContainer.appendChild(accountElement);
+
+        totalAccountBalance += account.balance; // Soma dos saldos das contas
+    });
+
+    // Atualiza o valor total no bloco de Saldo Contas
+    document.querySelector('#total-account-balance').textContent = `SALDO CONTAS: R$ ${totalAccountBalance.toFixed(2)}`;
+}
+
+// Função de atualização dos cartões e cálculo do total dos limites dos cartões
+function updateCards() {
+    const cards = JSON.parse(localStorage.getItem('cards')) || [];
+    const cardsContainer = document.querySelector('.meus-cartões');
+    cardsContainer.innerHTML = '<i class="fas fa-id-card"></i><span>Meus Cartões</span>';
+    
+    let totalCardLimit = 0; // Total de limite dos cartões
+
+    cards.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.innerHTML = `<img src="${card.logo}" style="width:30px; margin-right:10px;vertical-align: middle;">${card.name} - Limite: R$ ${card.limit.toFixed(2)}`;
+        cardsContainer.appendChild(cardElement);
+
+        totalCardLimit += card.limit; // Soma dos limites dos cartões
+    });
+
+    // Atualiza o valor total no bloco de Limite Cartões
+    document.querySelector('#total-card-limit').textContent = `LIMITE CARTÕES: R$ ${totalCardLimit.toFixed(2)}`;
+}
+
+// Carregar contas e cartões ao iniciar a página
+window.onload = function() {
+    loadTransactions(); // Carrega as transações
+    updateAccounts();    // Atualiza as contas e soma os saldos
+    updateCards();       // Atualiza os cartões e soma os limites
+};
+function updateAccounts() {
+        const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+        const accountsContainer = document.querySelector('.minhas-contas');
+        accountsContainer.innerHTML = '<i class="fas fa-credit-card"></i><span>Minhas Contas</span>';
+        
+        let totalAccountBalance = 0; // Total de saldo das contas
+
+        accounts.forEach((account, index) => {
+            const accountElement = document.createElement('div');
+            accountElement.innerHTML = `
+                <img src="${account.logo}" style="width:30px; margin-right:10px;vertical-align: middle;">
+                ${account.name} - Saldo: R$ ${account.balance.toFixed(2)} 
+                <i class="fas fa-trash-alt" onclick="removeAccount(${index})" style="cursor: pointer; color: red;font-weight: 400;vertical-align: middle;margin-left: 4%;
+    margin-right: auto;"></i>
+            `;
+            accountsContainer.appendChild(accountElement);
+
+            totalAccountBalance += account.balance; // Soma dos saldos das contas
+        });
+
+        // Atualiza o valor total no bloco de Saldo Contas
+        document.querySelector('#total-account-balance').textContent = `SALDO CONTAS: R$ ${totalAccountBalance.toFixed(2)}`;
+    }
+
+    function removeAccount(index) {
+        let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+        accounts.splice(index, 1); // Remove a conta pelo índice
+        localStorage.setItem('accounts', JSON.stringify(accounts)); // Atualiza o armazenamento local
+        updateAccounts(); // Atualiza a visualização
+    }
+
+    function updateCards() {
+        const cards = JSON.parse(localStorage.getItem('cards')) || [];
+        const cardsContainer = document.querySelector('.meus-cartões');
+        cardsContainer.innerHTML = '<i class="fas fa-id-card"></i><span>Meus Cartões</span>';
+        
+        let totalCardLimit = 0; // Total de limite dos cartões
+
+        cards.forEach((card, index) => {
+            const cardElement = document.createElement('div');
+            cardElement.innerHTML = `
+                <img src="${card.logo}" style="width:30px; margin-right:10px;vertical-align: middle;">
+                ${card.name} - Limite: R$ ${card.limit.toFixed(2)} 
+                <i class="fas fa-trash-alt" onclick="removeCard(${index})" style="cursor: pointer; color: red;font-weight: 400;vertical-align: middle;margin-left: 4%;
+    margin-right: auto;"></i>
+            `;
+            cardsContainer.appendChild(cardElement);
+
+            totalCardLimit += card.limit; // Soma dos limites dos cartões
+        });
+
+        // Atualiza o valor total no bloco de Limite Cartões
+        document.querySelector('#total-card-limit').textContent = `LIMITE CARTÕES: R$ ${totalCardLimit.toFixed(2)}`;
+    }
+
+    function removeCard(index) {
+        let cards = JSON.parse(localStorage.getItem('cards')) || [];
+        cards.splice(index, 1); // Remove o cartão pelo índice
+        localStorage.setItem('cards', JSON.stringify(cards)); // Atualiza o armazenamento local
+        updateCards(); // Atualiza a visualização
+    }
+
+    // Carregar contas e cartões ao iniciar a página
+    window.onload = function() {
+        loadTransactions(); // Carrega as transações
+        updateAccounts();    // Atualiza as contas e soma os saldos
+        updateCards();       // Atualiza os cartões e soma os limites
+    };
+
+    </script>
+</body>
+</html>
